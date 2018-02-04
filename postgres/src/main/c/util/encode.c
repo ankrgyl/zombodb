@@ -17,7 +17,7 @@
 
 #include "utils/builtins.h"
 
-#include "util/encode.h"
+#include "encode.h"
 
 struct pg_encoding
 {

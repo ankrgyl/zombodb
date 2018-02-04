@@ -17,8 +17,8 @@
 #include "fmgr.h"
 #include "utils/builtins.h"
 
-#include "am/zdbagg.h"
-#include "am/zdb_interface.h"
+#include "src/main/c/am/zdbagg.h"
+#include "src/main/c/am/zdb_interface.h"
 
 PG_FUNCTION_INFO_V1(zdb_internal_actual_index_record_count);
 PG_FUNCTION_INFO_V1(zdb_internal_estimate_count);

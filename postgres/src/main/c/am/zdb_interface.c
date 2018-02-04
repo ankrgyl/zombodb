@@ -175,6 +175,20 @@ void zdb_index_init(void) {
 	add_string_reloption(RELOPT_KIND_ZDB, "block_routing_field", "Which field should ZomboDB use to group rows in shards", NULL, validate_block_routing_field);
 }
 
+int null_safe_strcmp(const char* a, const char* b);
+int null_safe_strcmp(const char* a, const char* b) {
+    if (a == NULL && b == NULL) {
+        return 0;
+    } else if (a == NULL) {
+        return -1;
+    } else if (b == NULL) {
+        return 1;
+    }
+    else {
+        return strcmp(a, b);
+    }
+}
+
 ZDBIndexDescriptor *zdb_alloc_index_descriptor(Relation indexRel) {
     MemoryContext      oldContext = MemoryContextSwitchTo(TopTransactionContext);
     StringInfo         scratch    = makeStringInfo();
@@ -241,7 +255,7 @@ ZDBIndexDescriptor *zdb_alloc_index_descriptor(Relation indexRel) {
         desc->indexName = pstrdup(RelationGetRelationName(indexRel));
 		if (ZDBIndexOptionsGetUrl(indexRel) == NULL) {
 			elog(ERROR, "Must set 'url' option on index or set 'zombodb.default_elasticsearch_url' in postgresql.conf");
-		} else if (strcmp(ZDBIndexOptionsGetUrl(indexRel), "default") == 0) {
+		} else if (null_safe_strcmp(ZDBIndexOptionsGetUrl(indexRel), "default") == 0) {
 			/* use the default from postgresql.conf */
 			if (zdb_default_elasticsearch_url_guc == NULL)
 				elog(ERROR, "Must set 'zombodb.default_elasticsearch_url' in postgresql.conf");

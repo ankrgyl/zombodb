@@ -31,6 +31,7 @@
 #include "executor/executor.h"
 #include "executor/spi.h"
 #include "nodes/makefuncs.h"
+#include "nodes/nodeFuncs.h"
 #include "optimizer/planmain.h"
 #include "storage/bufmgr.h"
 #include "storage/lmgr.h"
@@ -42,7 +43,7 @@
 #include "utils/snapmgr.h"
 #include "utils/tqual.h"
 
-#include "am/zdb_interface.h"
+#include "src/main/c/am/zdb_interface.h"
 
 typedef struct {
     TransactionId last_xid;
@@ -332,7 +333,7 @@ evaluate_expr(Expr *expr, Oid result_type, int32 result_typmod,
      */
     const_val = ExecEvalExprSwitchContext(exprstate,
                                           GetPerTupleExprContext(estate),
-                                          &const_is_null, NULL);
+                                          &const_is_null);
 
     /* Get info needed about result datatype */
     get_typlenbyval(result_type, &resultTypLen, &resultTypByVal);

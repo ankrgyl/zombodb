@@ -31,6 +31,8 @@
 #include "utils/builtins.h"
 #include "utils/json.h"
 #include "utils/rel.h"
+#include "commands/defrem.h"
+#include "common/fe_memutils.h"
 
 #include "zdb_interface.h"
 #include "zdbops.h"
@@ -194,6 +196,17 @@ void validate_zdb_funcExpr(FuncExpr *funcExpr, Oid *heapRelOid) {
 		elog(ERROR, "Second argument of the 'zdb' column function is not ::tid");
 }
 
+int strcmp_to_am_name(const char* a, Relation indexRel);
+int strcmp_to_am_name(const char* a, Relation indexRel) {
+    char*   amname;
+    int     cmp;
+
+    amname = get_am_name(indexRel->rd_amhandler);
+    cmp = strcmp(a, amname);
+    pg_free(amname);
+    return cmp;
+}
+
 Oid zdb_determine_index_oid(FuncExpr *funcExpr, Oid heapRelOid) {
     /**
      * The index we use here is the index from the table specified by the column named 'zdb'
@@ -209,13 +222,13 @@ Oid zdb_determine_index_oid(FuncExpr *funcExpr, Oid heapRelOid) {
     foreach (lc, indexes) {
         Oid      indexRelOid = (Oid) lfirst_oid(lc);
         Relation indexRel;
-        NameData amname;
+        int      cmp;
 
         indexRel = RelationIdGetRelation(indexRelOid);
-        amname   = indexRel->rd_am->amname;
+        cmp = strcmp_to_am_name("zombodb", indexRel);
         RelationClose(indexRel);
 
-        if (strcmp("zombodb", amname.data) == 0) {
+        if (cmp == 0) {
             Node *n = linitial(RelationGetIndexExpressions(indexRel));
 
             if (IsA(n, FuncExpr) && ((FuncExpr *) n)->funcid == funcExpr->funcid) {
@@ -250,7 +263,7 @@ Oid zdb_determine_index_oid_by_heap(Oid heapRelOid) {
         Oid      indexRelOid = (Oid) lfirst_oid(lc);
         Relation indexRel    = RelationIdGetRelation(indexRelOid);
 
-        if (strcmp("zombodb", indexRel->rd_am->amname.data) == 0 && ZDBIndexOptionsGetShadow(indexRel) == NULL)
+        if (strcmp_to_am_name("zombodb", indexRel) == 0 && ZDBIndexOptionsGetShadow(indexRel) == NULL)
             zdbIndexRelId = indexRelOid;
 
         RelationClose(indexRel);
@@ -305,7 +318,7 @@ Datum zdb_determine_index(PG_FUNCTION_ARGS) {
                 Oid      indexRelOid = (Oid) lfirst_oid(lc);
                 Relation indexRel    = RelationIdGetRelation(indexRelOid);
 
-                if (strcmp("zombodb", indexRel->rd_am->amname.data) == 0 && ZDBIndexOptionsGetShadow(indexRel) == NULL)
+                if (strcmp_to_am_name("zombodb", indexRel) == 0 && ZDBIndexOptionsGetShadow(indexRel) == NULL)
                     zdbIndexRelId = indexRelOid;
 
                 RelationClose(indexRel);

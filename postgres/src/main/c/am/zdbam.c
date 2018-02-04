@@ -56,6 +56,8 @@
 #include "zdbam.h"
 #include "zdbseqscan.h"
 
+#include <sys/time.h>
+
 
 PG_FUNCTION_INFO_V1(zdbbuild);
 PG_FUNCTION_INFO_V1(zdbbuildempty);
@@ -287,16 +289,16 @@ static void zdb_executor_end_hook(QueryDesc *queryDesc) {
         standard_ExecutorEnd(queryDesc);
 }
 
-static void zdb_executor_run_hook(QueryDesc *queryDesc, ScanDirection direction, long count) {
+static void zdb_executor_run_hook(QueryDesc *queryDesc, ScanDirection direction, uint64_t count, bool execute_once) {
     executorDepth++;
     PG_TRY();
             {
                 pushCurrentQuery(queryDesc);
 
                 if (prev_ExecutorRunHook)
-                    prev_ExecutorRunHook(queryDesc, direction, count);
+                    prev_ExecutorRunHook(queryDesc, direction, count, execute_once);
                 else
-                    standard_ExecutorRun(queryDesc, direction, count);
+                    standard_ExecutorRun(queryDesc, direction, count, execute_once);
                 executorDepth--;
             }
         PG_CATCH();
@@ -327,12 +329,12 @@ static void zdb_executor_finish_hook(QueryDesc *queryDesc) {
     PG_END_TRY();
 }
 
-static void zdb_process_utility_hook (Node *parsetree, const char *queryString, ProcessUtilityContext context, ParamListInfo params, DestReceiver *dest, char *completionTag) {
+static void zdb_process_utility_hook (PlannedStmt *parsetree, const char *queryString, ProcessUtilityContext context, ParamListInfo params, QueryEnvironment *queryEnv, DestReceiver *dest, char *completionTag) {
 
     if (prev_ProcessUtilityHook)
-        prev_ProcessUtilityHook(parsetree, queryString, context, params, dest, completionTag);
+        prev_ProcessUtilityHook(parsetree, queryString, context, params, queryEnv, dest, completionTag);
     else
-        standard_ProcessUtility(parsetree, queryString, context, params, dest, completionTag);
+        standard_ProcessUtility(parsetree, queryString, context, params, queryEnv, dest, completionTag);
 
     process_inserted_indexes(!zdb_batch_mode_guc);
 }
@@ -818,7 +820,15 @@ Datum zdbbulkdelete(PG_FUNCTION_ARGS) {
 
         CHECK_FOR_INTERRUPTS();
 
-        if (!visibilitymap_test(heapRel, blockno, &vmap_buff)) {
+        /*
+        This used to be visibilitymap_test, but in Postgres 9.6 (I think?)
+        it was renamed
+        See:
+            https://github.com/postgres/postgres/blob/REL_10_STABLE/src/backend/access/heap/visibilitymap.c
+                and
+            https://github.com/postgres/postgres/blob/REL9_5_STABLE/src/backend/access/heap/visibilitymap.c
+        */
+        if (!visibilitymap_get_status(heapRel, blockno, &vmap_buff)) {
             OffsetNumber offno;
 
             for (offno = FirstOffsetNumber; offno <= MaxOffsetNumber; offno++) {

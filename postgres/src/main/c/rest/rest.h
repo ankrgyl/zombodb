@@ -22,7 +22,7 @@
 #include "postgres.h"
 #include "lib/stringinfo.h"
 
-#include "util/curl_support.h"
+#include "src/main/c/util/curl_support.h"
 
 extern StringInfo rest_call(char *method, char *url, StringInfo postData, int compressionLevel);
 

@@ -23,7 +23,7 @@
 #include "storage/itemptr.h"
 #include "utils/relcache.h"
 
-#include "util/zdbutils.h"
+#include "src/main/c/util/zdbutils.h"
 
 #define ZDB_MAX_SHARDS 64
 #define ZDB_MAX_REPLICAS 64

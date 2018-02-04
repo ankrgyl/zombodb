@@ -24,6 +24,8 @@ else
 	endif
 endif
 
+PG_CPPFLAGS = -Werror
+
 PG_CONFIG    = pg_config
 
 # default target

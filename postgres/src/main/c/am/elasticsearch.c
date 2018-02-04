@@ -34,10 +34,10 @@
 #include "utils/snapmgr.h"
 #include "utils/tqual.h"
 
-#include "rest/rest.h"
-#include "util/encode.h"
-#include "util/varintenc.h"
-#include "util/zdbutils.h"
+#include "src/main/c/rest/rest.h"
+#include "src/main/c/util/encode.h"
+#include "src/main/c/util/varintenc.h"
+#include "src/main/c/util/zdbutils.h"
 
 #include "elasticsearch.h"
 #include "zdbseqscan.h"

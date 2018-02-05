@@ -67,7 +67,7 @@ PG_FUNCTION_INFO_V1(zdbgettuple);
 PG_FUNCTION_INFO_V1(zdbrescan);
 PG_FUNCTION_INFO_V1(zdbendscan);
 PG_FUNCTION_INFO_V1(zdbmarkpos);
-PG_FUNCTION_INFO_V1(zdbrestpos);
+PG_FUNCTION_INFO_V1(zdbrestrpos);
 PG_FUNCTION_INFO_V1(zdbbulkdelete);
 PG_FUNCTION_INFO_V1(zdbvacuumcleanup);
 PG_FUNCTION_INFO_V1(zdboptions);

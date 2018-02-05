@@ -203,7 +203,9 @@ int strcmp_to_am_name(const char* a, Relation indexRel) {
 
     amname = get_am_name(indexRel->rd_amhandler);
     cmp = strcmp(a, amname);
-    pg_free(amname);
+    if (amname != NULL) {
+        free(amname);
+    }
     return cmp;
 }
 

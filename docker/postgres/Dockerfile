@@ -3,7 +3,7 @@
 #
 
 # Pull base image.
-FROM postgres:9.5
+FROM postgres:10.1
 ENV ZOMBODB_VER 5.6.4-1.0.0_beta5
 
 # Fetch wget
